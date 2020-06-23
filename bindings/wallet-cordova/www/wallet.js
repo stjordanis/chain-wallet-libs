@@ -187,7 +187,7 @@ var plugin = {
      * @param {errorCallback} errorCallback description (TODO)
      */
     pendingTransactionsSize: function (ptr, successCallback, errorCallback) {
-        argscheck.checkArgs('sff', 'conversionTransactionsSize', arguments);
+        argscheck.checkArgs('*ff', 'pendingTransactionsSize', arguments);
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PENDING_TRANSACTIONS_SIZE, [ptr]);
     },
 
@@ -198,7 +198,7 @@ var plugin = {
      * @param {errorCallback} errorCallback this function can fail if the index is out of range
      */
     pendingTransactionsGet: function (ptr, index, successCallback, errorCallback) {
-        argscheck.checkArgs('snff', 'conversionTransactiosGet', arguments);
+        argscheck.checkArgs('*nff', 'pendingTransactionsGet', arguments);
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PENDING_TRANSACTIONS_GET, [ptr, index]);
     },
 
@@ -319,7 +319,7 @@ var plugin = {
      * @param {errorCallback} errorCallback
      */
     pendingTransactionsDelete: function (ptr, successCallback, errorCallback) {
-        argscheck.checkArgs('sff', 'pendingTransactionsDelete', arguments);
+        argscheck.checkArgs('*ff', 'pendingTransactionsDelete', arguments);
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PENDING_TRANSACTIONS_DELETE, [ptr]);
     }
 };

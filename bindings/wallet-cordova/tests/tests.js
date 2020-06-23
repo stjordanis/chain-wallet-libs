@@ -229,7 +229,7 @@ exports.defineAutoTests = function () {
                     return deleteConversion(conversionPtr);
                 })
                 .catch(function (err) {
-                    done.fail('could not restore wallet' + err);
+                    done.fail('could not cast conversion' + err);
                 })
                 .then(function () {
                     done();
