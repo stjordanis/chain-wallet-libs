@@ -46,3 +46,30 @@ fn encrypt_decrypt() {
         &data[..]
     );
 }
+
+#[wasm_bindgen_test]
+fn sign_verify_extended() {
+    let key = Ed25519ExtendedPrivate::generate();
+    let msg = [1, 2, 3, 4u8];
+    let signature = key.sign(&msg);
+
+    assert!(key.public().verify(&signature, &msg));
+}
+
+#[wasm_bindgen_test]
+fn sign_verify_bip32() {
+    let key = Ed25519Bip32Private::generate();
+    let msg = [1, 2, 3, 4u8];
+    let signature = key.sign(&msg);
+
+    assert!(key.public().verify(&signature, &msg));
+}
+
+#[wasm_bindgen_test]
+fn sign_verify() {
+    let key = Ed25519Private::generate();
+    let msg = [1, 2, 3, 4u8];
+    let signature = key.sign(&msg);
+
+    assert!(key.public().verify(&signature, &msg));
+}

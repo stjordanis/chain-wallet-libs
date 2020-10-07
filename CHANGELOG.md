@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Key pair generation support.
 - Symmetric encryption and decryption support.
+- Key signing and verification.
 
 ## [0.5.0-pre3] - 2020-09-04
 

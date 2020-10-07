@@ -36,11 +36,44 @@ pub enum PayloadType {
     Public,
 }
 
-#[wasm_bindgen]
-pub struct Ed25519ExtendedPrivate(chain_crypto::SecretKey<chain_crypto::Ed25519Extended>);
+#[macro_export]
+macro_rules! impl_secret_key {
+    ($name:ident, $wrapped_type:ty) => {
+        #[wasm_bindgen]
+        pub struct $name(chain_crypto::SecretKey<$wrapped_type>);
+
+        #[wasm_bindgen]
+        impl $name {
+            pub fn generate() -> $name {
+                Self(chain_crypto::SecretKey::<$wrapped_type>::generate(
+                    rand::rngs::OsRng,
+                ))
+            }
+
+            pub fn public(&self) -> Ed25519Public {
+                Ed25519Public(self.0.to_public())
+            }
+
+            pub fn bytes(&self) -> Box<[u8]> {
+                self.0.clone().leak_secret().as_ref().into()
+            }
+
+            pub fn sign(&self, msg: &[u8]) -> Ed25519Signature {
+                Ed25519Signature::from_binary(self.0.sign(&msg).as_ref()).unwrap()
+            }
+        }
+    };
+}
+
+impl_secret_key!(Ed25519ExtendedPrivate, chain_crypto::Ed25519Extended);
+impl_secret_key!(Ed25519Bip32Private, chain_crypto::Ed25519Extended);
+impl_secret_key!(Ed25519Private, chain_crypto::Ed25519Extended);
 
 #[wasm_bindgen]
 pub struct Ed25519Public(chain_crypto::PublicKey<chain_crypto::Ed25519>);
+
+#[wasm_bindgen]
+pub struct Ed25519Signature(chain_crypto::Signature<Box<[u8]>, chain_crypto::Ed25519>);
 
 #[wasm_bindgen]
 impl Wallet {
@@ -219,21 +252,6 @@ impl Options {
 }
 
 #[wasm_bindgen]
-impl Ed25519ExtendedPrivate {
-    pub fn generate() -> Self {
-        Self(chain_crypto::SecretKey::<chain_crypto::Ed25519Extended>::generate(rand::rngs::OsRng))
-    }
-
-    pub fn public(&self) -> Ed25519Public {
-        Ed25519Public(self.0.to_public())
-    }
-
-    pub fn bytes(&self) -> Box<[u8]> {
-        self.0.clone().leak_secret().as_ref().into()
-    }
-}
-
-#[wasm_bindgen]
 impl Ed25519Public {
     pub fn bytes(&self) -> Box<[u8]> {
         self.0.as_ref().into()
@@ -242,6 +260,27 @@ impl Ed25519Public {
     pub fn bech32(&self) -> String {
         use chain_crypto::bech32::Bech32 as _;
         self.0.to_bech32_str()
+    }
+
+    pub fn verify(&self, signature: &Ed25519Signature, msg: &[u8]) -> bool {
+        let verification = signature.0.verify_slice(&self.0, msg.as_ref());
+        match verification {
+            chain_crypto::Verification::Success => true,
+            chain_crypto::Verification::Failed => false,
+        }
+    }
+}
+
+#[wasm_bindgen]
+impl Ed25519Signature {
+    pub fn from_binary(signature: &[u8]) -> Result<Ed25519Signature, JsValue> {
+        chain_crypto::Signature::from_binary(signature)
+            .map(Self)
+            .map_err(|e| JsValue::from_str(&format!("Invalid signature {}", e)))
+    }
+
+    pub fn to_bytes(&self) -> Box<[u8]> {
+        self.0.as_ref().into()
     }
 }
 
